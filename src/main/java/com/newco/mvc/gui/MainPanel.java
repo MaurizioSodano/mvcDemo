@@ -5,57 +5,63 @@ import java.awt.*;
 
 public class MainPanel extends JPanel {
 
-    public MainPanel(){
-       // setBackground(Color.RED);
+    public MainPanel() {
+        // setBackground(Color.RED);
 
-        var formLabel=new JLabel("Add User");
-        formLabel.setFont(new Font("Serif",Font.PLAIN,30));
-        var nameLabel=new JLabel("Name:");
-        var passLabel=new JLabel("Password:");
+        var formLabel = new JLabel("Add User");
+        formLabel.setFont(new Font("Serif", Font.PLAIN, 30));
+        var nameLabel = new JLabel("Name:");
+        var passLabel = new JLabel("Password:");
 
-        var nameField=new JTextField(15);
-        var passField=new JTextField(15);
-        var addButton=new JButton("Save");
-
+        var nameField = new JTextField(15);
+        var passField = new JTextField(15);
+        var addButton = new JButton("Save");
+        var rightPad = new Insets(0, 0, 0, 10);
+        var zeroInsets=new Insets(0,0,0,0);
         setLayout(new GridBagLayout());
 
-        var gc=new GridBagConstraints();
+        var gc = new GridBagConstraints();
 
-        gc.gridx=0;
-        gc.gridy=0;
+        gc.gridx = 0;
+        gc.gridy = 0;
 
         gc.weightx = 1; //gives a weight to distribute the cells
         gc.weighty = 20;
-        gc.gridwidth=2; //merges the 2 cells (0,0) and (0,1)
-        add(formLabel,gc);
+        gc.gridwidth = 2; //merges the 2 cells (0,0) and (0,1)
+        add(formLabel, gc);
 
-        gc.gridwidth=1;
+        gc.gridwidth = 1;
         gc.gridy++;
-        gc.gridx=0;
+        gc.gridx = 0;
         gc.weighty = 0.1;
-        gc.anchor=GridBagConstraints.LAST_LINE_END;
-        add(nameLabel,gc);
+        gc.anchor = GridBagConstraints.LAST_LINE_END;
+        gc.insets = rightPad;
+        add(nameLabel, gc);
+
 
         gc.gridx++;
         gc.weighty = 0.1;
-        gc.anchor=GridBagConstraints.LAST_LINE_START;
-        add(nameField,gc);
+        gc.anchor = GridBagConstraints.LAST_LINE_START;
+        gc.insets = zeroInsets;
+        add(nameField, gc);
 
-        gc.gridx=0;
+        gc.gridx = 0;
         gc.gridy++;
         gc.weighty = 0.1;
-        gc.anchor=GridBagConstraints.LAST_LINE_END;
-        add(passLabel,gc);
+        gc.anchor = GridBagConstraints.LAST_LINE_END;
+        gc.insets = rightPad;
+        add(passLabel, gc);
 
         gc.gridx++;
         gc.weighty = 0.1;
-        gc.anchor=GridBagConstraints.LAST_LINE_START;
-        add(passField,gc);
+        gc.anchor = GridBagConstraints.LAST_LINE_START;
+        gc.insets = zeroInsets;
+        add(passField, gc);
 
         gc.gridy++;
         gc.weighty = 30;
-        gc.anchor=GridBagConstraints.FIRST_LINE_START;
-        add(addButton,gc);
+        gc.anchor = GridBagConstraints.FIRST_LINE_START;
+        add(addButton, gc);
 
     }
 }

@@ -12,14 +12,36 @@ public class MainPanel extends JPanel {
         var nameLabel=new JLabel("Name:");
         var passLabel=new JLabel("Password:");
 
-        var nameField=new JTextField();
-        var passField=new JTextField();
-
+        var nameField=new JTextField(15);
+        var passField=new JTextField(15);
         var addButton=new JButton("Save");
 
-        setLayout(new BorderLayout());
+        setLayout(new GridBagLayout());
 
-        add(formLabel,BorderLayout.NORTH);
-        add(nameLabel,BorderLayout.CENTER);
+        var gc=new GridBagConstraints();
+
+        gc.gridx=0;
+        gc.gridy=0;
+        gc.gridwidth=2;
+        add(formLabel,gc);
+
+        gc.gridwidth=1;
+        gc.gridy++;
+        gc.gridx=0;
+        add(nameLabel,gc);
+
+        gc.gridx++;
+        add(nameField,gc);
+
+        gc.gridx=0;
+        gc.gridy++;
+        add(passLabel,gc);
+
+        gc.gridx++;
+        add(passField,gc);
+
+        gc.gridy++;
+        add(addButton,gc);
+
     }
 }

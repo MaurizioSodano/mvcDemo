@@ -17,8 +17,8 @@ public class MainPanel extends JPanel {
 
         gc.gridx = 0;
         gc.gridy = 0;
-
         gc.weighty = 1; //gives a weight to distribute the cells
+
         add(formLabel, gc);
 
         gc.gridy++;
@@ -32,7 +32,12 @@ public class MainPanel extends JPanel {
 
     private JPanel createFormPanel(){
         JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createEtchedBorder());
+
+        var padding=20;
+        var etchedBorder=BorderFactory.createEtchedBorder();
+        var emptyBorder=BorderFactory.createEmptyBorder(padding,padding,padding,padding);
+
+        panel.setBorder(BorderFactory.createCompoundBorder(etchedBorder,emptyBorder));
         var nameLabel = new JLabel("Name:");
         var passLabel = new JLabel("Password:");
 
@@ -76,7 +81,7 @@ public class MainPanel extends JPanel {
 
         gc.gridy++;
         gc.weighty = 30;
-        gc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gc.anchor = GridBagConstraints.FIRST_LINE_END;
         panel.add(addButton, gc);
 
         return panel;

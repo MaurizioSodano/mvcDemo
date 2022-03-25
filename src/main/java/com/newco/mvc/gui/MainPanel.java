@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainPanel extends JPanel {
+    private UserFormListener formListener;
 
     public MainPanel() {
         // setBackground(Color.RED);
@@ -24,20 +25,23 @@ public class MainPanel extends JPanel {
         gc.gridy++;
         gc.weighty = 1.5;
         gc.anchor = GridBagConstraints.NORTH;
-        add(createFormPanel(),gc);
-
+        add(createFormPanel(), gc);
 
 
     }
 
-    private JPanel createFormPanel(){
+    public void setFormListener(UserFormListener formListener) {
+        this.formListener = formListener;
+    }
+
+    private JPanel createFormPanel() {
         JPanel panel = new JPanel();
 
-        var padding=20;
-        var etchedBorder=BorderFactory.createEtchedBorder();
-        var emptyBorder=BorderFactory.createEmptyBorder(padding,padding,padding,padding);
+        var padding = 20;
+        var etchedBorder = BorderFactory.createEtchedBorder();
+        var emptyBorder = BorderFactory.createEmptyBorder(padding, padding, padding, padding);
 
-        panel.setBorder(BorderFactory.createCompoundBorder(etchedBorder,emptyBorder));
+        panel.setBorder(BorderFactory.createCompoundBorder(etchedBorder, emptyBorder));
         var nameLabel = new JLabel("Name:");
         var passLabel = new JLabel("Password:");
 
@@ -45,15 +49,17 @@ public class MainPanel extends JPanel {
         var passField = new JTextField(15);
         var addButton = new JButton("Save");
 
-        addButton.addActionListener(e-> {
-            var name=nameField.getText();
-            var password=passField.getText();
-            System.out.println(name+":"+password);
+        addButton.addActionListener(e -> {
+            var username = nameField.getText();
+            var password = passField.getText();
+           if (formListener!=null){
+               formListener.formSubmitted(username,password);
+           }
         });
 
 
         var rightPad = new Insets(0, 0, 0, 10);
-        var zeroInsets=new Insets(0,0,0,0);
+        var zeroInsets = new Insets(0, 0, 0, 0);
 
         var gc = new GridBagConstraints();
 

@@ -44,6 +44,14 @@ public class MainPanel extends JPanel {
         var nameField = new JTextField(15);
         var passField = new JTextField(15);
         var addButton = new JButton("Save");
+
+        addButton.addActionListener(e-> {
+            var name=nameField.getText();
+            var password=passField.getText();
+            System.out.println(name+":"+password);
+        });
+
+
         var rightPad = new Insets(0, 0, 0, 10);
         var zeroInsets=new Insets(0,0,0,0);
 

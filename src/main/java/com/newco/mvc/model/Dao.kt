@@ -1,0 +1,9 @@
+package com.newco.mvc.model
+
+interface Dao<T> {
+    fun save(t: T)
+    fun findById(id: Int): T?
+    fun update(t: T)
+    fun delete(t: T)
+    fun getAll(): List<T>
+}

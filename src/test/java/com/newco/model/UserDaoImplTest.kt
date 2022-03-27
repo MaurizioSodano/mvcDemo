@@ -1,0 +1,222 @@
+package com.newco.model
+
+
+import com.newco.mvc.model.Database
+import com.newco.mvc.model.Profile
+import com.newco.mvc.model.User
+import com.newco.mvc.model.UserDaoImpl
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.sql.Connection
+import java.util.function.Supplier
+import kotlin.streams.asSequence
+import kotlin.test.assertNotNull
+
+
+class UserDaoImplTest {
+    private var conn: Connection? = null
+
+    private lateinit var users: MutableList<User>
+
+    companion object {
+        const val NUM_TEST_USERS = 200
+    }
+
+    private fun loadUsers(): MutableList<User> {
+        //val users = arrayListOf<User>()
+        println(UserDaoImplTest::class.java.classLoader?.getResource("greaterexpectations.txt"))
+        val path = Paths.get(
+            Companion::class.java.classLoader?.getResource("greaterexpectations.txt")?.toURI()!!
+        )
+
+        val streamSupplier =
+            Supplier {
+                Files.lines(path).map { line -> line.split("\\W+".toRegex()) }
+            }
+        //val temp = streamSupplier.get().asSequence().flatten().filter { word -> word.length > 3 }
+
+
+        //temp.forEach(::println)
+        return streamSupplier.get().asSequence()
+            .flatten()
+            .filter { word -> word.length > 3 }
+            .take(NUM_TEST_USERS)
+            .map { name -> User(name,"pass$name") }
+
+            .toMutableList()
+
+    }
+
+    @Test
+    fun testFindAndUpdate(){
+        val user= users[0]
+        val userDao= UserDaoImpl()
+        userDao.save(user)
+
+        val maxId=getMaxId()
+        user.id=maxId
+        var retrievedUser=userDao.findById(maxId)
+        assertNotNull(retrievedUser,"no user retrieved")
+        assertEquals("retrieved user differs from saved user",retrievedUser,user)
+
+        user.name="abcde"
+        user.password="abcdefff"
+        userDao.update(user)
+        retrievedUser=userDao.findById(maxId)
+        assertNotNull(retrievedUser,"no user retrieved")
+        assertEquals("retrieved user differs from saved user",retrievedUser,user)
+
+
+
+    }
+    @After
+    fun tearDown() {
+        println("After")
+        val db = Database.instance
+        db.close()
+    }
+
+    @Before
+    fun setUp() {
+        println("Before")
+        users = loadUsers()
+        //println(users.size)
+        //users?.forEach { user -> run { val userDao = UserDaoImpl(); userDao.save(user); } }
+        val db = Database.instance
+        val props = Profile.getProperties("db")
+
+        db.connect(props)
+        conn = db.connection
+        conn?.autoCommit = false
+    }
+
+    @Test
+    fun save() {
+        val user = User("Jupiter","Neptune")
+        val userDao = UserDaoImpl()
+
+        userDao.save(user)
+        val stmt = conn?.createStatement()
+        val rs = stmt?.executeQuery("select id, name, password from user order by id desc;")
+
+        val result = rs?.next() == true
+        assertTrue("cannot retrieve inserted user", result)
+
+        val name = rs?.getString("name")
+        assertEquals("user name doesn't match retrieved", user.name, name)
+
+        val password = rs?.getString("password")
+        assertEquals("user password doesn't match retrieved", user.password, password)
+
+        stmt?.close()
+
+    }
+
+
+    private fun getMaxId(): Int {
+        val stmt = conn?.createStatement()
+        val rs = stmt?.executeQuery("select max(id) as id from user")
+
+        val maxInt = if (rs?.next() == true) {
+            rs.getInt("id")
+
+        } else {
+            0
+        }
+
+        stmt?.close()
+        return maxInt
+    }
+
+    private fun getUserInRange(minId: Int, maxId: Int): List<User> {
+        val stmt = conn?.prepareStatement("select id, name, password from user where id>=? and id<=?")
+        stmt?.setInt(1, minId)
+        stmt?.setInt(2, maxId)
+        val rs=stmt?.executeQuery()
+        val users= arrayListOf<User>()
+        while (rs?.next()!=false){
+            val id= rs!!.getInt("id")
+            val name= rs.getString("name")
+            val password= rs.getString("password")
+            users.add(User(id,name,password))
+        }
+        stmt.close()
+        return users
+    }
+
+    @Test
+    fun saveMultiple() {
+        val userDao = UserDaoImpl()
+        for (user in users) {
+            userDao.save(user)
+        }
+        val maxId = getMaxId()
+
+       // println("maxId=$maxId")
+        for ( i  in users.indices){
+            val id=(maxId- users.size)+i+1
+            //println("id=$id")
+            users[i].id=id
+        }
+        val retrievedUsers=getUserInRange(maxId- users.size+1,maxId)
+        assertEquals("max Id differs from expected", retrievedUsers.size, NUM_TEST_USERS)
+        assertEquals("max Id differs from expected", users,retrievedUsers)
+
+    }
+
+    @Test
+    fun delete() {
+        val userDao = UserDaoImpl()
+        for (user in users) {
+            userDao.save(user)
+        }
+
+
+        val maxId = getMaxId()
+
+        //println("maxId=$maxId")
+        for ( i  in users.indices){
+            val id=(maxId- users.size)+i+1
+            users[i].id=id
+        }
+        val deletedUserIndex= NUM_TEST_USERS /2
+        val deleteUser=users[deletedUserIndex]
+
+        //println("deleted user=$deleteUser")
+        //println("users:$users")
+
+        users.remove(deleteUser)
+        userDao.delete(deleteUser)
+        val retrievedUsers=getUserInRange(maxId- NUM_TEST_USERS +1,maxId)
+       // println("retrieved users:$retrievedUsers")
+        assertEquals("max Id differs from expected", retrievedUsers.size, users.size)
+        assertEquals("max Id differs from expected", users,retrievedUsers)
+
+    }
+
+    @Test
+    fun getAll() {
+        val userDao = UserDaoImpl()
+        for (user in users) {
+            userDao.save(user)
+        }
+        val maxId = getMaxId()
+
+
+        for ( i  in users.indices){
+            val id=(maxId- users.size)+i+1
+           // println("id=$id")
+            users[i].id=id
+        }
+        var dbUsers=userDao.getAll()
+        dbUsers=dbUsers.subList(dbUsers.size- users.size,dbUsers.size)//getUserInRange(maxId- users.size+1,maxId)
+        assertEquals("max Id differs from expected", dbUsers.size, NUM_TEST_USERS)
+        assertEquals("max Id differs from expected", users,dbUsers)
+
+    }
+}

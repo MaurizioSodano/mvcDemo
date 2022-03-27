@@ -1,0 +1,101 @@
+package com.newco.mvc.model
+
+import java.sql.SQLException
+
+class UserDaoImpl : UserDao {
+    override fun save(user: User) {
+        val conn = Database.instance.connection;
+        try {
+            val stmt = conn?.prepareStatement("insert into user (name,password) values (?,?)")
+            stmt?.setString(1, user.name)
+            stmt?.setString(2, user.password)
+            stmt?.executeUpdate()
+
+            stmt?.close()
+
+        } catch (e: SQLException) {
+            throw DaoException(e)
+        }
+
+    }
+
+    override fun findById(id: Int): User? {
+        val conn = Database.instance.connection;
+        var user: User? = null
+
+        try {
+            val stmt = conn?.prepareStatement("select * from user where id =?")
+            stmt?.setInt(1, id)
+            val rs = stmt?.executeQuery()
+
+            if (rs?.next() == true) {
+                val name = rs.getString(2)
+                val password = rs.getString(3)
+                user = User(id, name,password)
+            }
+
+            stmt?.close()
+
+        } catch (e: SQLException) {
+            throw DaoException(e)
+        }
+        return user
+    }
+
+    override fun update(user: User) {
+        val conn = Database.instance.connection;
+
+        try {
+            val stmt = conn?.prepareStatement("update user set name=?, password=? where id =?")
+
+            stmt?.setString(1, user.name)
+            stmt?.setString(2, user.password)
+            stmt?.setInt(3, user.id)
+            stmt?.executeUpdate()
+            stmt?.close()
+
+        } catch (e: SQLException) {
+            throw DaoException(e)
+        }
+
+    }
+
+    override fun delete(user: User) {
+        val conn = Database.instance.connection;
+
+        try {
+            val stmt = conn?.prepareStatement("delete from user where id =?")
+            stmt?.setInt(1, user.id)
+            stmt?.executeUpdate()
+            stmt?.close()
+
+        } catch (e: SQLException) {
+            throw DaoException(e)
+        }
+
+    }
+
+    override fun getAll(): List<User> {
+        val conn = Database.instance.connection;
+        val users = arrayListOf<User>()
+
+
+        try {
+            val stmt = conn?.createStatement()
+            val rs = stmt?.executeQuery("select id, name, password from user order by id")
+            while (rs?.next() == true) {
+                val id = rs.getInt("id")
+                val name = rs.getString("name")
+                val password = rs.getString("password")
+                users.add(User(id, name,password))
+
+            }
+            stmt?.close()
+
+        } catch (e: SQLException) {
+            throw DaoException(e)
+        }
+        return users
+    }
+
+}
